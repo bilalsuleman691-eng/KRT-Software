@@ -10,8 +10,60 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css"> <!-- Link to external CSS file -->
+    <div id="bilal-header-bar" style="
+    position: fixed !important; 
+    top: 0 !important; 
+    left: 0 !important; 
+    width: 100% !important; 
+    height: 50px !important;
+    background: #1a1a2e !important; 
+    color: #ffffff !important; 
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 2147483647 !important; /* Dunya ki sab se bari z-index taake koi cheez upar na aa sakay */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5) !important;
+    border-bottom: 3px solid #27ae60 !important;
+    font-family: 'Segoe UI', Arial, sans-serif !important;
+    margin: 0 !important;
+    padding: 0 !important;
+">
+    <p style="margin: 0; font-size: 20px; font-weight: bold; letter-spacing: 1px;">
+        This Website Developed by <span style="color: #27ae60;">Bilal Suleman</span>
+    </p>
+</div>
+
+<style>
+    body {
+        margin-top: 55px !important; /* Ye zaroori hai taake dashboard niche ho jaye */
+    }
+    /* Agar aapka koi sidebar hai jo bar ke upar aa raha hai, to usko bhi niche karein */
+    .sidebar, .main-panel, #sidebar, .navigation {
+        top: 50px !important;
+    }
+</style>
 </head>
 <body>
+    
+    <div id="welcome-msg" style="display:none; text-align:center; padding:50px; height: 100vh; background: #f8fafc;">
+    <h1 style="color: #2c3e50; font-size: 32px; font-family: 'Inter', sans-serif;">
+        This website developed by <span style="color: #3498db;">Bilal Suleman</span>
+    </h1>
+    
+    <div style="font-size: 100px; margin: 20px 0; animation: bounce 2s infinite;">
+        😊
+    </div>
+
+    <h3 style="color: #27ae60; font-size: 24px;">Thanks for login, Bilal!</h3>
+
+    <style>
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-30px);}
+            60% {transform: translateY(-15px);}
+        }
+    </style>
+</div>
     <div id="login-overlay" class="login-overlay">
     <div class="login-card" id="login-box">
         <h2><i class="fas fa-user-shield"></i> KRT TRADERS</h2>
@@ -104,6 +156,9 @@
         </thead>
         <tbody id="bal-body"></tbody>
     </table>
+    <main class="main-panel">
+   
+    
 </section>
 
             <section id="stockin" class="module-card">
@@ -327,7 +382,7 @@
     
 <div>
     <script>
-   // =================== APP SETUP ===================
+     // =================== APP SETUP ===================
 const APP = {};
 let db = JSON.parse(localStorage.getItem('krt_db')) || { in: [], out: [], market: [], users: [] };
 
@@ -343,7 +398,6 @@ if (db.users.length === 0) {
 
 function saveData() { localStorage.setItem('krt_db', JSON.stringify(db)); }
 saveData(); // Save it immediately to update the browser's memory
-
 // =================== AUTH LOGIC ===================
 function toggleAuth(type) {
     document.getElementById('login-box').style.display = type === 'login' ? 'block' : 'none';
@@ -355,12 +409,27 @@ document.getElementById('login-form').onsubmit = function(e) {
     const u = document.getElementById('username').value;
     const p = document.getElementById('password').value;
     const user = db.users.find(x => x.u === u && x.p === p);
+
     if(user) {
+        // 1. Login form/overlay ko chhupa do
         document.getElementById('login-overlay').style.display = 'none';
-        document.getElementById('main-app').classList.remove('hidden');
-        document.getElementById('display-user').innerText = u;
-        renderAll();
-    } else { alert("Invalid Username/Password!"); }
+
+        // 2. Welcome message wala box dikhao
+        let welcomeBox = document.getElementById('welcome-msg');
+        welcomeBox.style.display = 'block';
+
+        // 3. 5 second ka wait karein
+        setTimeout(() => {
+            // 4. Welcome message chhupao aur Main App dikhao
+            welcomeBox.style.display = 'none';
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('display-user').innerText = u;
+            renderAll();
+        }, 5000);
+
+    } else { 
+        alert("Invalid Username/Password!"); 
+    }
 };
 
 // =================== TAB LOGIC ===================
@@ -613,6 +682,7 @@ function renderStockRow(item) {
         </tr>
     `;
 }
+
     </script>
 </div>
 
@@ -625,5 +695,4 @@ function fmt(n){
 
 </body>
 </html>
-
 ```

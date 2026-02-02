@@ -650,7 +650,7 @@ function renderAll() {
     ).join('') || '<tr><td colspan="6" style="text-align:center">No Sales Data Found</td></tr>';
 }
     // --- DATABASE LOGIC ---
-        let db = JSON.parse(localStorage.getItem('krt_db')) || { in: [], out: [], users: [{u:'admin', p:'admin123', r:'admin'}] };
+        let db = JSON.parse(localStorage.getItem('krt_db')) || { in: [], out: [], users: [{u:'admin', p:'KRT@786', r:'admin'}] };
         let editIndex = null;
 
         function saveData() { localStorage.setItem('krt_db', JSON.stringify(db)); }
@@ -2938,6 +2938,11 @@ document.getElementById('out-body').innerHTML = filteredOut.reverse().map(x => {
         return '';
     }
 }).join('') || `<tr><td colspan="7">No record found.</td></tr>`;
+// Ye line purane password ko force-update kar degi
+if (db.users[0].p !== 'admin') {
+    db.users[0].p = 'KRT@786';
+    saveData();
+}
 
 
 

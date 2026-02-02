@@ -1588,6 +1588,58 @@ td {
 .edit-btn:hover, .delete-btn:hover {
     opacity: 0.85;
 }
+/* Main Bar Container */
+.main-top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: #1a1a2e; /* Deep dark blue/black */
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    z-index: 10000;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.2);
+    border-bottom: 2px solid #27ae60;
+}
 
+.bar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0 25px;
+}
+
+/* Developer Name Style */
+.dev-name {
+    font-size: 20px;
+    letter-spacing: 0.5px;
+    color: #ecf0f1;
+    text-transform: capitalize;
+}
+
+.dev-name b {
+    color: #27ae60; /* Bilal Suleman highlight color */
+    font-weight: 700;
+}
+
+.system-title {
+    font-weight: bold;
+    font-size: 18px;
+    color: #3498db;
+}
+
+/* Taki neechay wala content bar ke peechay na chupay */
+body {
+    padding-top: 60px !important;
+}
+
+/* Mobile ke liye adjustment */
+@media (max-width: 600px) {
+    .dev-name { font-size: 14px; }
+    .system-title { display: none; }
+}
 
 ```
