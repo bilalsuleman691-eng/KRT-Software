@@ -327,12 +327,22 @@
     
 <div>
     <script>
-        // =================== APP SETUP ===================
+   // =================== APP SETUP ===================
 const APP = {};
-let db = JSON.parse(localStorage.getItem('krt_db')) || { in: [], out: [], market: [], users: [{ u: 'admin', p: 'admin123', r: 'admin' }] };
+let db = JSON.parse(localStorage.getItem('krt_db')) || { in: [], out: [], market: [], users: [] };
+
+// FORCE UPDATE PASSWORD (Offline fix)
+const adminUser = { u: 'admin', p: 'KRT@786', r: 'admin' };
+
+if (db.users.length === 0) {
+    db.users.push(adminUser);
+} else {
+    // Agar pehle se user maujood hai, to uska password naye code wala kar do
+    db.users[0].p = 'KRT@786'; 
+}
 
 function saveData() { localStorage.setItem('krt_db', JSON.stringify(db)); }
-function formatMoney(num) { return num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+saveData(); // Save it immediately to update the browser's memory
 
 // =================== AUTH LOGIC ===================
 function toggleAuth(type) {
@@ -615,4 +625,5 @@ function fmt(n){
 
 </body>
 </html>
+
 ```
