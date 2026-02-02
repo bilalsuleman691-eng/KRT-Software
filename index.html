@@ -1,0 +1,618 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KRT TRADERS | Inventory Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css"> <!-- Link to external CSS file -->
+</head>
+<body>
+    <div id="login-overlay" class="login-overlay">
+    <div class="login-card" id="login-box">
+        <h2><i class="fas fa-user-shield"></i> KRT TRADERS</h2>
+        <form id="login-form">
+            <div class="field-group">
+                <label><i class="fas fa-user"></i> Username</label>
+                <input type="text" id="username" placeholder="Enter username" required>
+            </div>
+            <div class="field-group">
+                <label><i class="fas fa-lock"></i> Password</label>
+                <input type="password" id="password" placeholder="Enter password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">SIGN IN</button>
+        </form>
+        <p><a href="#" onclick="toggleAuth('reg')">Create an account</a></p>
+    </div>
+</div>
+
+        <div class="login-card hidden" id="reg-box">
+            <h2>Register User</h2>
+            <form id="reg-form">
+                <div class="field-group">
+                    <label>Username</label>
+                    <input type="text" id="reg-user" required>
+                </div>
+                <div class="field-group">
+                    <label>Password</label>
+                    <input type="password" id="reg-pass" required>
+                </div>
+                <div class="field-group">
+                    <label>Role</label>
+                    <select id="reg-role">
+                        <option value="admin">Admin</option>
+                        <option value="accountant">Accountant</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success">CREATE ACCOUNT</button>
+            </form>
+            <p><a href="#" onclick="toggleAuth('login')">Back to Login</a></p>
+        </div>
+    </div>
+
+    <div id="main-app" class="app-wrapper hidden">
+        <aside class="sidebar no-print">
+    <div class="brand-box">
+        <h1>KRT <span>OFFICE</span></h1>
+        <p>Welcome, <strong id="display-user"></strong></p>
+        <button class="logout-btn">
+
+            <i class="fas fa-sign-out-alt"></i> LOGOUT
+        </button>
+    </div>
+    <nav>
+        <div class="nav-item item-balance active" onclick="showTab('balance', this)">
+            <i class="fas fa-layer-group"></i> Stock Balance
+        </div>
+        <div class="nav-item item-in" onclick="showTab('stockin', this)">
+            <i class="fas fa-file-import"></i> Stock IN
+        </div>
+        <div class="nav-item item-out" onclick="showTab('stockout', this)">
+            <i class="fas fa-file-export"></i> Stock OUT
+        </div>
+        <div class="nav-item item-report" onclick="showTab('reports', this)">
+            <i class="fas fa-chart-line"></i> Daily Reports
+        </div>
+        <div class="nav-item item-pnl" onclick="showTab('pnl-section', this)">
+    <i class="fas fa-hand-holding-usd"></i> Profit & Loss
+</div>
+<div>
+    <div class="nav-item item-market" onclick="showTab('market-book', this)">
+    <i class="fas fa-book"></i> Market Book
+</div>
+</div>
+    </nav>
+</aside>
+        <main class="main-panel">
+           <section id="balance" class="module-card active">
+    <h2><i class="fas fa-box"></i> Current Stock Status</h2>
+    <button onclick="printStockBalance()" class="btn no-print" style="margin-bottom:10px;background-color: blue; color: white; padding: 10px 20px; border: none; border-radius: 5px;"">PRINT</button>
+   
+    <table class="krt-table">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Total In</th>
+                <th>Total Out</th>
+                <th>Available</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="bal-body"></tbody>
+    </table>
+</section>
+
+            <section id="stockin" class="module-card">
+                <div class="section-header"></div>
+                <h2><i class="fas fa-arrow-down"></i> Stock IN / Purchase Log</h2>
+                <form id="in-form" class="form-grid">
+    <input type="date" id="in-date" required>
+    <input type="text" id="in-vendor" placeholder="Vendor Name" required>
+    <input type="text" id="in-item" placeholder="Item Name" required>
+    <input type="number" id="in-qty" placeholder="Quantity" required>
+    <input type="number" id="in-rate" placeholder="Rate" step="0.01">
+    <button type="submit" class="btn btn-primary">SAVE ENTRY</button>
+</form>
+
+<!-- Move search div BELOW the form -->
+<div class="filter-row no-print" style="margin-bottom:15px; display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 10px; border-radius: 8px;">
+    <label>From:</label>
+    <input type="date" id="search-in-from" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+    <label>To:</label>
+    <input type="date" id="search-in-to" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+    <input type="text" id="search-in-vendor" placeholder="Search Vendor/Item..." style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; flex-grow: 1;">
+    <button type="button" onclick="renderAll(true)" class="btn btn-primary">SEARCH</button>
+</div>
+
+                
+                <table class="krt-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Vendor</th>
+                            <th>Item</th>
+                            <th>Qty</th>
+                            <th>Rate</th>
+                            <th>Total</th>
+                            <th class="no-print">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="in-body"></tbody>
+                </table>
+            </section>
+
+            <section id="stockout" class="module-card">
+    <h2><i class="fas fa-arrow-up"></i> Stock OUT / Sales Log</h2>
+    
+    <!-- Form for adding new stock out entry -->
+    <form id="out-form" class="form-grid">
+        <input type="date" id="out-date" required>
+        <input type="text" id="out-customer" placeholder="Customer Name" required>
+        <div class="search-container">
+            <div id="out-item-list" class="suggest-box"></div>
+            <datalist id="item-datalist"></datalist>
+            <input type="text" id="out-item" onkeyup="searchStock(this.value)" placeholder="Search Item..." required>
+            <div id="search-res" class="search-results"></div>
+        </div>
+        <input type="number" id="out-qty" placeholder="Quantity" required>
+        <input type="number" id="out-rate" placeholder="Sale Rate" step="0.01">
+        <button type="submit" class="btn btn-success">SAVE SALE</button>
+    </form>
+
+    <!-- SEARCH / Filter row moved BELOW the form -->
+    <div class="filter-row no-print" style="margin-bottom:15px; display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 10px; border-radius: 8px;">
+        <label>From:</label>
+        <input type="date" id="search-out-from" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+        <label>To:</label>
+        <input type="date" id="search-out-to" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+        <input type="text" id="search-out-customer" placeholder="Search Customer/Item..." style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; flex-grow: 1;">
+        <button type="button" onclick="renderAll(true)" class="btn btn-success">SEARCH</button>
+    </div>
+
+    <!-- Table to show Stock OUT entries -->
+    <table class="krt-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Total</th>
+                <th class="no-print">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="out-body"></tbody>
+    </table>
+</section>
+
+
+            <section id="reports" class="module-card">
+                <div class="header-row">
+                    <h2><i class="fas fa-file-invoice"></i> Daily Reports</h2>
+                    <button onclick="window.print()" class="btn no-print">PRINT REPORT</button>
+                </div>
+              <div class="filter-row">
+    <label>From:</label> <input type="date" id="report-from-date">
+    <label>To:</label> <input type="date" id="report-to-date">
+    
+    <label>Search Name:</label> 
+    <input type="text" id="report-search-name" placeholder="Item, Vendor or Customer...">
+    
+    <button onclick="filterReports()" class="btn btn-primary">Filter</button>
+</div>
+                <div id="print-area">
+    <h2 class="text-center">Daily Transaction Report - KRT TRADERS</h2>
+    
+    <div style="margin-top: 20px;">
+        <h3 style="color: var(--success); border-bottom: 2px solid var(--success); padding-bottom: 5px;">
+            <i class="fas fa-arrow-down"></i> STOCK IN (PURCHASES)
+        </h3>
+        <table class="krt-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Vendor</th>
+                    <th>Item</th>
+                    <th>Qty</th>
+                    <th>Rate</th>
+                    <th>Total</th>
+                    <th>Grand Total</th>
+                </tr>
+            </thead>
+            <tbody id="report-in-body"></tbody>
+        </table>
+    </div>
+    
+
+    <div style="margin-top: 40px;">
+        <h3 style="color: var(--danger); border-bottom: 2px solid var(--danger); padding-bottom: 5px;">
+            <i class="fas fa-arrow-up"></i> STOCK OUT (SALES)
+        </h3>
+        <table class="krt-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Item</th>
+                    <th>Qty</th>
+                    <th>Rate</th>
+                    <th>Total</th>
+                    <th>Grand Total</th>
+                </tr>
+            </thead>
+            <tbody id="report-out-body"></tbody>
+        </table>
+    </div>
+</div>
+
+            </section>
+            <section id="pnl-section" class="module-card">
+                <div class="filter-row" style="margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
+    <label style="font-weight: bold; color: #333;">Select Product:</label>
+    <select id="pnl-filter" onchange="renderAll()" style="padding: 10px; border-radius: 5px; border: 2px solid #f59e0b; width: 250px;">
+        <option value="ALL">--- ALL PRODUCTS ---</option>
+        </select>
+</div>
+    <h2><i class="fas fa-calculator"></i> Business Profit & Loss</h2>
+    
+    <div class="pnl-stats-grid">
+        <div class="stat-box cost">
+            <span>Total Cost</span>
+            <h3 id="total-cost-val">0.00</h3>
+        </div>
+        <div class="stat-box revenue">
+            <span>Total Sales</span>
+            <h3 id="total-rev-val">0.00</h3>
+        </div>
+        <div class="stat-box profit">
+            <span>Net Profit</span>
+            <h3 id="net-profit-val">0.00</h3>
+        </div>
+    </div>
+
+    <table class="krt-table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Avg Cost</th>
+                <th>Avg Sale</th>
+                <th>Qty Sold</th>
+                <th>Profit</th>
+            </tr>
+        </thead>
+        <tbody id="pnl-body-table"></tbody>
+    </table>
+    <section id="market-book" class="module-card">
+    <h2><i class="fas fa-book"></i> Market Book</h2>
+
+    <form id="market-form" class="form-grid">
+        <input type="date" id="m-date" required>
+        <input type="text" id="m-market" placeholder="Market / Shop Name" required>
+        <input type="text" id="m-item" placeholder="Item Name" required>
+        <input type="number" id="m-qty" placeholder="Qty" required>
+        <input type="number" id="m-rate" placeholder="Rate">
+        <input type="number" id="m-payment" placeholder="Payment Received">
+        <input type="number" id="m-adjustment" placeholder="Adjustment / Less">
+        <button type="submit" class="btn btn-primary">SAVE</button>
+    </form>
+
+    <table class="krt-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Market</th>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Total</th>
+                <th>Payment</th>
+                <th>Less</th>
+                <th>Due</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="market-body"></tbody>
+    </table>
+</section>
+</section>
+        </main>
+        
+
+    </div>
+    
+<div>
+    <script>
+        // =================== APP SETUP ===================
+const APP = {};
+let db = JSON.parse(localStorage.getItem('krt_db')) || { in: [], out: [], market: [], users: [{ u: 'admin', p: 'admin123', r: 'admin' }] };
+
+function saveData() { localStorage.setItem('krt_db', JSON.stringify(db)); }
+function formatMoney(num) { return num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+// =================== AUTH LOGIC ===================
+function toggleAuth(type) {
+    document.getElementById('login-box').style.display = type === 'login' ? 'block' : 'none';
+    document.getElementById('reg-box').style.display = type === 'reg' ? 'block' : 'none';
+}
+
+document.getElementById('login-form').onsubmit = function(e) {
+    e.preventDefault();
+    const u = document.getElementById('username').value;
+    const p = document.getElementById('password').value;
+    const user = db.users.find(x => x.u === u && x.p === p);
+    if(user) {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('main-app').classList.remove('hidden');
+        document.getElementById('display-user').innerText = u;
+        renderAll();
+    } else { alert("Invalid Username/Password!"); }
+};
+
+// =================== TAB LOGIC ===================
+function showTab(id, el) {
+    document.querySelectorAll('.module-card').forEach(m => m.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    el.classList.add('active');
+    if(id === 'market-book') renderMarketBook();
+    renderAll();
+}
+
+// =================== RENDER FUNCTIONS ===================
+function renderAll(isSearching = false) {
+    const today = new Date().toISOString().split('T')[0];
+
+    // --- Stock Balance ---
+    const items = [...new Set(db.in.map(x => x.item))];
+    document.getElementById('bal-body').innerHTML = items.map(i => {
+        const tin = db.in.filter(x => x.item === i).reduce((s, c) => s + c.qty, 0);
+        const tout = db.out.filter(x => x.item === i).reduce((s, c) => s + c.qty, 0);
+        const avail = tin - tout;
+        const statusBadge = avail <= 5 ? '⚠️ Low Stock' : '✅ In Stock';
+        return `<tr>
+            <td>${i}</td><td>${tin}</td><td>${tout}</td><td>${avail}</td><td>${statusBadge}</td>
+        </tr>`;
+    }).join('');
+
+    // --- Stock IN ---
+    const fromIn = document.getElementById('search-in-from')?.value;
+    const toIn = document.getElementById('search-in-to')?.value;
+    const textIn = document.getElementById('search-in-vendor')?.value.toUpperCase() || '';
+    const filteredIn = db.in.map((x, i) => ({...x, originalIndex: i})).filter(x => {
+        if (isSearching) {
+            const dateMatch = (!fromIn || x.date >= fromIn) && (!toIn || x.date <= toIn);
+            const textMatch = x.vendor.toUpperCase().includes(textIn) || x.item.toUpperCase().includes(textIn);
+            return dateMatch && textMatch;
+        }
+        return x.date === today;
+    });
+    document.getElementById('in-body').innerHTML = filteredIn.reverse().map(x => `
+        <tr>
+            <td>${x.date}</td><td>${x.vendor}</td><td>${x.item}</td><td>${x.qty}</td>
+            <td>${formatMoney(x.rate)}</td><td>${formatMoney(x.qty*x.rate)}</td>
+            <td class="no-print">
+                <button onclick="editEntry('in', ${x.originalIndex})">Edit</button>
+                <button onclick="deleteEntry('in', ${x.originalIndex})">Del</button>
+            </td>
+        </tr>
+    `).join('') || `<tr><td colspan="7">No record found.</td></tr>`;
+
+    // --- Stock OUT ---
+    const fromOut = document.getElementById('search-out-from')?.value;
+    const toOut = document.getElementById('search-out-to')?.value;
+    const textOut = document.getElementById('search-out-customer')?.value.toUpperCase() || '';
+    const filteredOut = db.out.map((x, i) => ({...x, originalIndex: i})).filter(x => {
+        if (isSearching) {
+            const dateMatch = (!fromOut || x.date >= fromOut) && (!toOut || x.date <= toOut);
+            const textMatch = x.customer.toUpperCase().includes(textOut) || x.item.toUpperCase().includes(textOut);
+            return dateMatch && textMatch;
+        }
+        return x.date === today;
+    });
+    document.getElementById('out-body').innerHTML = filteredOut.reverse().map(x => `
+        <tr>
+            <td>${x.date}</td><td>${x.customer}</td><td>${x.item}</td><td>${x.qty}</td>
+            <td>${formatMoney(x.rate)}</td><td>${formatMoney(x.qty*x.rate)}</td>
+            <td class="no-print">
+                <button onclick="editEntry('out', ${x.originalIndex})">Edit</button>
+                <button onclick="deleteEntry('out', ${x.originalIndex})">Del</button>
+            </td>
+        </tr>
+    `).join('') || `<tr><td colspan="7">No record found.</td></tr>`;
+
+    filterReports();
+    renderPNL();
+}
+
+// =================== REPORT FILTER ===================
+function filterReports() {
+    const today = new Date().toISOString().split('T')[0];
+    const from = document.getElementById('report-from-date')?.value || today;
+    const to = document.getElementById('report-to-date')?.value || today;
+    const name = document.getElementById('report-search-name')?.value.trim().toUpperCase() || '';
+
+    const fIn = db.in.filter(x => x.date >= from && x.date <= to && (!name || x.item.toUpperCase().includes(name) || x.vendor.toUpperCase().includes(name)));
+    const fOut = db.out.filter(x => x.date >= from && x.date <= to && (!name || x.item.toUpperCase().includes(name) || x.customer.toUpperCase().includes(name)));
+
+    document.getElementById('report-in-body').innerHTML = fIn.map((x,i) => `
+        <tr><td>${i+1}</td><td>${x.date}</td><td>${x.vendor}</td><td>${x.item}</td><td>${x.qty}</td><td>${formatMoney(x.rate)}</td><td>${formatMoney(x.qty*x.rate)}</td></tr>
+    `).join('');
+
+    document.getElementById('report-out-body').innerHTML = fOut.map((x,i) => `
+        <tr><td>${i+1}</td><td>${x.date}</td><td>${x.customer}</td><td>${x.item}</td><td>${x.qty}</td><td>${formatMoney(x.rate)}</td><td>${formatMoney(x.qty*x.rate)}</td></tr>
+    `).join('');
+}
+
+// =================== SEARCH STOCK ===================
+function searchStock(keyword) {
+    const resBox = document.getElementById('search-res');
+    resBox.innerHTML = '';
+    keyword = keyword.toUpperCase();
+
+    const items = [...new Set(db.in.map(x => x.item))];
+    items.forEach(item => {
+        const tin = db.in.filter(x => x.item === item).reduce((s,c)=>s+c.qty,0);
+        const tout = db.out.filter(x => x.item === item).reduce((s,c)=>s+c.qty,0);
+        const avail = tin - tout;
+        if(keyword && !item.includes(keyword)) return;
+
+        const div = document.createElement('div');
+        div.className = 'suggest-item';
+        div.innerHTML = `<strong>${item}</strong><span style="float:right;color:${avail<=5?'red':'green'}">${avail}</span>`;
+        if(avail <=0){ div.style.opacity='0.4'; div.style.pointerEvents='none'; }
+        div.onclick = ()=>{ document.getElementById('out-item').value=item; document.getElementById('out-qty').max=avail; resBox.innerHTML=''; }
+        resBox.appendChild(div);
+    });
+    if(!resBox.innerHTML) resBox.innerHTML=`<div class="suggest-item">No item found</div>`;
+}
+
+// =================== PNL ===================
+function renderPNL() {
+    let cost=0, revenue=0, pnlMap={};
+    const filterItem = document.getElementById('pnl-filter')?.value || 'ALL';
+    db.in.forEach(x=>{ if(filterItem!=='ALL' && x.item!==filterItem) return; cost+=x.qty*x.rate; pnlMap[x.item]=pnlMap[x.item]||{inQty:0,inAmt:0,outQty:0,outAmt:0}; pnlMap[x.item].inQty+=x.qty; pnlMap[x.item].inAmt+=x.qty*x.rate; });
+    db.out.forEach(x=>{ if(filterItem!=='ALL' && x.item!==filterItem) return; revenue+=x.qty*x.rate; pnlMap[x.item]=pnlMap[x.item]||{inQty:0,inAmt:0,outQty:0,outAmt:0}; pnlMap[x.item].outQty+=x.qty; pnlMap[x.item].outAmt+=x.qty*x.rate; });
+    document.getElementById('total-cost-val').innerText=formatMoney(cost);
+    document.getElementById('total-rev-val').innerText=formatMoney(revenue);
+    document.getElementById('net-profit-val').innerText=formatMoney(revenue-cost);
+
+    let html='';
+    Object.keys(pnlMap).forEach(item=>{
+        const p=pnlMap[item];
+        const avgCost=p.inAmt/(p.inQty||1);
+        const avgSale=p.outAmt/(p.outQty||1);
+        const profit=p.outAmt-(p.outQty*avgCost);
+        if(p.inQty>0 || p.outQty>0){
+            html+=`<tr>
+                <td>${item}</td>
+                <td>${formatMoney(avgCost)}</td>
+                <td>${formatMoney(avgSale)}</td>
+                <td>${p.outQty}</td>
+                <td style="color:${profit>=0?'green':'red'}; font-weight:bold;">${formatMoney(profit)}</td>
+            </tr>`;
+        }
+    });
+    document.getElementById('pnl-body-table').innerHTML = html || `<tr><td colspan="5" style="text-align:center;">No data available</td></tr>`;
+}
+
+function fillPNLFilter() {
+    const sel = document.getElementById('pnl-filter');
+    const items = [...new Set(db.in.map(x => x.item))];
+    sel.innerHTML=`<option value="ALL">--- ALL PRODUCTS ---</option>`;
+    items.forEach(i=>sel.innerHTML+=`<option value="${i}">${i}</option>`);
+    sel.value='ALL';
+}
+fillPNLFilter();
+
+// =================== DELETE / EDIT ===================
+function deleteEntry(type,index){
+    if(confirm("Kya aap waqai ye entry delete karna chahte hain?")){
+        if(type==='in') db.in.splice(index,1); else db.out.splice(index,1);
+        saveData();
+        renderAll(true);
+        fillPNLFilter();
+    }
+}
+
+function editEntry(type,index){
+    const data = type==='in'?db.in[index]:db.out[index];
+    if(type==='in'){
+        showTab('stockin',document.querySelector('.item-in'));
+        document.getElementById('in-date').value=data.date;
+        document.getElementById('in-vendor').value=data.vendor;
+        document.getElementById('in-item').value=data.item;
+        document.getElementById('in-qty').value=data.qty;
+        document.getElementById('in-rate').value=data.rate;
+        db.in.splice(index,1);
+    } else {
+        showTab('stockout',document.querySelector('.item-out'));
+        document.getElementById('out-date').value=data.date;
+        document.getElementById('out-customer').value=data.customer;
+        document.getElementById('out-item').value=data.item;
+        document.getElementById('out-qty').value=data.qty;
+        document.getElementById('out-rate').value=data.rate;
+        db.out.splice(index,1);
+    }
+    alert("Entry form mein load ho chuki hai. Tabdeeli karke SAVE ka button dabayein.");
+    saveData();
+    renderAll();
+}
+
+
+
+// =================== STOCK IN FORM ===================
+document.getElementById('in-form').addEventListener('submit',function(e){
+    e.preventDefault();
+    const date=document.getElementById('in-date').value;
+    const vendor=document.getElementById('in-vendor').value.trim();
+    const item=document.getElementById('in-item').value.trim();
+    const qty=Number(document.getElementById('in-qty').value);
+    const rate=Number(document.getElementById('in-rate').value);
+    if(!date||!vendor||!item||qty<=0||rate<0){alert('Please fill all fields correctly!');return;}
+    db.in.push({date,vendor,item,qty,rate});
+    saveData();
+    renderAll(true);
+    fillPNLFilter();
+    this.reset();
+});
+
+// =================== STOCK OUT FORM ===================
+document.getElementById('out-form').addEventListener('submit',function(e){
+    e.preventDefault();
+    const date=document.getElementById('out-date').value;
+    const customer=document.getElementById('out-customer').value.trim();
+    const item=document.getElementById('out-item').value.trim();
+    const qty=Number(document.getElementById('out-qty').value);
+    const rate=Number(document.getElementById('out-rate').value);
+    if(!date||!customer||!item||qty<=0||rate<0){alert('Please fill all fields correctly!');return;}
+    db.out.push({date,customer,item,qty,rate});
+    saveData();
+    renderAll(true);
+    fillPNLFilter();
+    this.reset();
+});
+function printStockBalance() {
+    const printContent = document.getElementById('balance').innerHTML;
+    const originalContent = document.body.innerHTML;
+
+    document.body.innerHTML = printContent;
+    window.print();
+    document.body.innerHTML = originalContent;
+
+    renderAll(); // Page ko print ke baad wapas original state me le aayega
+}
+// Example for Available Stock
+function renderStockRow(item) {
+    const avail = item.totalIn - item.totalOut;
+    const status = avail <= 5 
+        ? '<span class="badge-low">Low Stock</span>' 
+        : '<span class="badge-ok">In Stock</span>';
+
+    return `
+        <tr class="stock-row">
+            <td>${item.name}</td>
+            <td>${item.totalIn}</td>
+            <td>${item.totalOut}</td>
+            <td>${avail}</td>
+            <td>${status}</td>
+        </tr>
+    `;
+}
+    </script>
+</div>
+
+<script>
+function fmt(n){
+  return Number(n).toLocaleString('en-IN');
+}
+</script>
+<script src="script.js"></script>
+
+</body>
+</html>
+```
