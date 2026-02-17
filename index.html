@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KRT TRADERS | Inventory Management System</title>
@@ -10,6 +11,20 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css"> <!-- Link to external CSS file -->
+    
+    
+</head>
+<body>
+    
+
+<div class="menu-btn" onclick="toggleSidebar()">
+    <span></span>
+    <span></span>
+    <span></span>
+</div>
+
+<!-- baaki content -->
+
     <div id="bilal-header-bar" style="
     position: fixed !important; 
     top: 0 !important; 
@@ -42,8 +57,13 @@
         top: 50px !important;
     }
 </style>
-</head>
-<body>
+    
+    <div style="text-align: center; margin: 20px 0; background: #f4f4f4; padding: 10px; border-radius: 8px;">
+    <strong>Select View: </strong>
+    <button onclick="changeDevice('auto)">📱 Mobile</button>
+    <button onclick="changeDevice('768px')">📱 Tablet</button>
+    <button onclick="changeDevice('100%')">💻 Laptop</button>
+</div>
     
     <div id="welcome-msg" style="display:none; text-align:center; padding:50px; height: 100vh; background: #f8fafc;">
     <h1 style="color: #2c3e50; font-size: 32px; font-family: 'Inter', sans-serif;">
@@ -109,6 +129,13 @@
     <div id="main-app" class="app-wrapper hidden">
         <aside class="sidebar no-print">
     <div class="brand-box">
+        <div class="sidebar-header">
+    
+    <div class="menu-toggle" onclick="toggleSidebar()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
         <h1>KRT <span>OFFICE</span></h1>
         <p>Welcome, <strong id="display-user"></strong></p>
         <button class="logout-btn">
@@ -139,7 +166,8 @@
 </div>
     </nav>
 </aside>
-        <main class="main-panel">
+        <main class="main-panel" id="mainContent">
+
            <section id="balance" class="module-card active">
     <h2><i class="fas fa-box"></i> Current Stock Status</h2>
     <button onclick="printStockBalance()" class="btn no-print" style="margin-bottom:10px;background-color: blue; color: white; padding: 10px 20px; border: none; border-radius: 5px;"">PRINT</button>
@@ -156,7 +184,7 @@
         </thead>
         <tbody id="bal-body"></tbody>
     </table>
-    <main class="main-panel">
+   
    
     
 </section>
@@ -382,22 +410,19 @@
     
 <div>
     <script>
-     // =================== APP SETUP ===================
-const APP = {};
+ // =================== APP SETUP ===================
 let db = JSON.parse(localStorage.getItem('krt_db')) || { in: [], out: [], market: [], users: [] };
 
-// FORCE UPDATE PASSWORD (Offline fix)
 const adminUser = { u: 'admin', p: 'KRT@786', r: 'admin' };
-
 if (db.users.length === 0) {
     db.users.push(adminUser);
 } else {
-    // Agar pehle se user maujood hai, to uska password naye code wala kar do
     db.users[0].p = 'KRT@786'; 
 }
 
 function saveData() { localStorage.setItem('krt_db', JSON.stringify(db)); }
-saveData(); // Save it immediately to update the browser's memory
+function formatMoney(n) { return "Rs. " + (Number(n) || 0).toLocaleString('en-IN'); }
+
 // =================== AUTH LOGIC ===================
 function toggleAuth(type) {
     document.getElementById('login-box').style.display = type === 'login' ? 'block' : 'none';
@@ -406,58 +431,93 @@ function toggleAuth(type) {
 
 document.getElementById('login-form').onsubmit = function(e) {
     e.preventDefault();
-    const u = document.getElementById('username').value;
-    const p = document.getElementById('password').value;
+    const u = document.getElementById('username').value.trim();
+    const p = document.getElementById('password').value.trim();
     const user = db.users.find(x => x.u === u && x.p === p);
 
     if(user) {
-        // 1. Login form/overlay ko chhupa do
         document.getElementById('login-overlay').style.display = 'none';
-
-        // 2. Welcome message wala box dikhao
-        let welcomeBox = document.getElementById('welcome-msg');
+        const welcomeBox = document.getElementById('welcome-msg');
         welcomeBox.style.display = 'block';
-
-        // 3. 5 second ka wait karein
         setTimeout(() => {
-            // 4. Welcome message chhupao aur Main App dikhao
             welcomeBox.style.display = 'none';
             document.getElementById('main-app').classList.remove('hidden');
             document.getElementById('display-user').innerText = u;
             renderAll();
-        }, 5000);
-
-    } else { 
-        alert("Invalid Username/Password!"); 
+        }, 2000); // 5 sec zyada tha, 2 sec behtar hai
+    } else {
+        alert("Invalid Username/Password!");
     }
 };
 
-// =================== TAB LOGIC ===================
+// =================== RENDER LOGIC ===================
+function renderAll(isSearching = false) {
+    const today = new Date().toISOString().split('T')[0];
+
+    // Stock Balance
+    const items = [...new Set(db.in.map(x => x.item))];
+    document.getElementById('bal-body').innerHTML = items.map(i => {
+        const tin = db.in.filter(x => x.item === i).reduce((s, c) => s + Number(c.qty), 0);
+        const tout = db.out.filter(x => x.item === i).reduce((s, c) => s + Number(c.qty), 0);
+        const avail = tin - tout;
+        const statusBadge = avail <= 5 ? '<span style="color:red">⚠️ Low</span>' : '<span style="color:green">✅ OK</span>';
+        return `<tr><td>${i}</td><td>${tin}</td><td>${tout}</td><td>${avail}</td><td>${statusBadge}</td></tr>`;
+    }).join('');
+
+    // Common Render Logic for IN/OUT
+    renderTable('in', isSearching);
+    renderTable('out', isSearching);
+    filterReports();
+    renderPNL();
+}
+
+function renderTable(type, isSearching) {
+    const today = new Date().toISOString().split('T')[0];
+    const prefix = type === 'in' ? 'in' : 'out';
+    const container = document.getElementById(`${prefix}-body`);
+    
+    let data = db[type].map((x, i) => ({...x, originalIndex: i}));
+    
+    if(isSearching) {
+        const from = document.getElementById(`search-${prefix}-from`).value;
+        const to = document.getElementById(`search-${prefix}-to`).value;
+        const text = document.getElementById(`search-${prefix}-${type==='in'?'vendor':'customer'}`).value.toUpperCase();
+        
+        data = data.filter(x => {
+            const dateMatch = (!from || x.date >= from) && (!to || x.date <= to);
+            const textMatch = (x.vendor || x.customer || "").toUpperCase().includes(text) || x.item.toUpperCase().includes(text);
+            return dateMatch && textMatch;
+        });
+    } else {
+        data = data.filter(x => x.date === today);
+    }
+
+    container.innerHTML = data.reverse().map(x => `
+        <tr>
+            <td>${x.date}</td><td>${x.vendor || x.customer}</td><td>${x.item}</td>
+            <td>${x.qty}</td><td>${formatMoney(x.rate)}</td><td>${formatMoney(x.qty*x.rate)}</td>
+            <td class="no-print">
+                <button onclick="deleteEntry('${type}', ${x.originalIndex})">Del</button>
+            </td>
+        </tr>
+    `).join('') || `<tr><td colspan="7">No records today</td></tr>`;
+}
+
 function showTab(id, el) {
     document.querySelectorAll('.module-card').forEach(m => m.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById(id).classList.add('active');
-    el.classList.add('active');
-    if(id === 'market-book') renderMarketBook();
-    renderAll();
+    if(el) el.classList.add('active');
 }
 
-// =================== RENDER FUNCTIONS ===================
-function renderAll(isSearching = false) {
-    const today = new Date().toISOString().split('T')[0];
 
-    // --- Stock Balance ---
-    const items = [...new Set(db.in.map(x => x.item))];
-    document.getElementById('bal-body').innerHTML = items.map(i => {
-        const tin = db.in.filter(x => x.item === i).reduce((s, c) => s + c.qty, 0);
-        const tout = db.out.filter(x => x.item === i).reduce((s, c) => s + c.qty, 0);
-        const avail = tin - tout;
-        const statusBadge = avail <= 5 ? '⚠️ Low Stock' : '✅ In Stock';
-        return `<tr>
-            <td>${i}</td><td>${tin}</td><td>${tout}</td><td>${avail}</td><td>${statusBadge}</td>
-        </tr>`;
-    }).join('');
 
+// Initial Load
+window.onload = () => {
+    if(document.getElementById('main-app').classList.contains('hidden')) {
+        document.getElementById('login-overlay').style.display = 'flex';
+    }
+};
     // --- Stock IN ---
     const fromIn = document.getElementById('search-in-from')?.value;
     const toIn = document.getElementById('search-in-to')?.value;
@@ -506,7 +566,7 @@ function renderAll(isSearching = false) {
 
     filterReports();
     renderPNL();
-}
+
 
 // =================== REPORT FILTER ===================
 function filterReports() {
@@ -655,17 +715,48 @@ document.getElementById('out-form').addEventListener('submit',function(e){
     fillPNLFilter();
     this.reset();
 });
-function printStockBalance() {
-    const printContent = document.getElementById('balance').innerHTML;
-    const originalContent = document.body.innerHTML;
 
-    document.body.innerHTML = printContent;
-    window.print();
-    document.body.innerHTML = originalContent;
 
-    renderAll(); // Page ko print ke baad wapas original state me le aayega
+
+function renderStockRow(item) {
+    const avail = item.totalIn - item.totalOut;
+    const status = avail <= 5 
+        ? '<span class="badge-low">Low Stock</span>' 
+        : '<span class="badge-ok">In Stock</span>';
+
+    return `
+        <tr>
+            <td>${item.name}</td>
+            <td>${item.totalIn}</td>
+            <td>${item.totalOut}</td>
+            <td>${avail}</td>
+            <td>${status}</td>
+        </tr>
+    `;
 }
-// Example for Available Stock
+
+function changeDevice(width) {
+    const main = document.getElementById('mainContent');
+    if (!main) return;
+
+    // Width set karna
+    main.style.width = (width === '100%') ? '100%' : width;
+
+    // Max width aur center alignment
+    main.style.maxWidth = '100%';
+    main.style.margin = '0 auto';
+
+    // Mobile layout ke liye flex column
+    if (parseInt(width) <= 768) {
+        main.classList.add('mobile-view');
+    } else {
+        main.classList.remove('mobile-view');
+    }
+}
+
+</script>
+
+<script>
 function renderStockRow(item) {
     const avail = item.totalIn - item.totalOut;
     const status = avail <= 5 
@@ -683,14 +774,83 @@ function renderStockRow(item) {
     `;
 }
 
-    </script>
-</div>
+import javax.swing.*;
+import java.awt.*;
+
+public class DeviceResizer {
+
+    public static void changeDevice(JPanel mainContent, String width) {
+        if (mainContent == null) return;
+
+        // Reset width first
+        mainContent.setMaximumSize(new Dimension(Integer.MAX_VALUE, mainContent.getHeight()));
+
+        // Set width
+        if ("100%".equals(width)) {
+            mainContent.setPreferredSize(new Dimension(800, mainContent.getHeight())); // full width (example)
+        } else {
+            try {
+                int w = Integer.parseInt(width.replace("px", ""));
+                mainContent.setPreferredSize(new Dimension(w, mainContent.getHeight()));
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Center content in parent
+        Container parent = mainContent.getParent();
+        if (parent != null) {
+            parent.setLayout(new FlowLayout(FlowLayout.CENTER));
+            parent.revalidate();
+            parent.repaint();
+        }
+    }
+
+    // Example usage
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("KRT TRADERS");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        JPanel mainContent = new JPanel();
+        mainContent.setPreferredSize(new Dimension(600, 400));
+        mainContent.setBackground(Color.LIGHT_GRAY);
+
+        frame.add(mainContent);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+
+        // Simulate device change
+        changeDevice(mainContent, "375px"); // Mobile
+    }
+}
+
+</script>
 
 <script>
-function fmt(n){
-  return Number(n).toLocaleString('en-IN');
-}
+window.addEventListener("load", function () {
+    setTimeout(function () {
+        const headerBar = document.getElementById("bilal-header-bar");
+        if (headerBar) {
+            headerBar.style.transition = "all 0.5s ease";
+            headerBar.style.opacity = "0";
+            headerBar.style.top = "-60px";
+
+            setTimeout(() => {
+                headerBar.style.display = "none";
+                document.body.style.marginTop = "0px"; // content upar aa jaye
+            }, 500);
+        }
+    }, 20000); // 20000 = 20 seconds
+});
 </script>
+
+
+
+
+
+
+
 <script src="script.js"></script>
 
 </body>
